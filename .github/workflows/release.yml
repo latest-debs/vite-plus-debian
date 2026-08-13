@@ -1,4 +1,4 @@
-name: Build Vite+ for Debian
+name: Build vite-plus for Debian
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: The version of Vite+ to build (e.g. v0.2.9)
+        description: The version of voidzero-dev/vite-plus to build (e.g. v1.0.0)
         type: string
         required: false
       build_version:
@@ -70,7 +70,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Vite+
+      - name: Build vite-plus
         uses: ranjithrajv/debian-multiarch-builder@v.0.1a8
         env:
           # Authenticate GitHub API calls from the builder; anonymous calls
@@ -88,7 +88,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vite-plus-debian-packages
-          path: vite-plus_*.deb
+          path: |
+            vite-plus_*.deb
+            *.dsc
+            *.debian.tar.xz
+            *.orig.tar.xz
           if-no-files-found: error
 
   release:
@@ -108,5 +112,9 @@ jobs:
           draft: true
           tag_name: ${{ needs.prepare.outputs.version }}+${{ needs.prepare.outputs.build_version }}
           name: ${{ needs.prepare.outputs.version }}+${{ needs.prepare.outputs.build_version }}
-          files: vite-plus_*.deb
+          files: |
+            vite-plus_*.deb
+            *.dsc
+            *.debian.tar.xz
+            *.orig.tar.xz
           fail_on_unmatched_files: true
