@@ -59,7 +59,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MANUAL_VERSION: ${{ inputs.version }}
           BUILD_VERSION: ${{ inputs.build_version }}
-          AUTO: ${{ github.event_name == 'schedule' || inputs.auto == 'true' }}
+          AUTO: ${{ github.event_name == 'schedule' || inputs.auto }}
 
   build:
     name: Build
