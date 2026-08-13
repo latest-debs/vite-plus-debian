@@ -1,0 +1,8 @@
+# Package definition for Vite+
+
+package_name: vite-plus
+github_repo: voidzero-dev/vite-plus
+artifact_format: tar.gz
+description: "The unified toolchain for the web (vp CLI)"
+
+# Build for all Debian suites and all supported architectures.
