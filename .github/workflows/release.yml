@@ -57,7 +57,7 @@ jobs:
       should_build: ${{ steps.detect.outputs.should_build }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Detect version
         id: detect
@@ -88,10 +88,10 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build vite-plus
-        uses: ranjithrajv/debian-multiarch-builder@v.0.1a21
+        uses: ranjithrajv/debian-multiarch-builder@v.0.1a23
         env:
           # Authenticate GitHub API calls from the builder; anonymous calls
           # from shared runner IPs are rate-limited (60/h) and caused
@@ -149,12 +149,19 @@ jobs:
       - name: Run binaries from the built package
         run: |
           set -euo pipefail
-          # Smoke-test the oldest available suite (bookworm first, then
-          # trixie, forky, sid) so packages that intentionally skip a suite
-          # (e.g. atuin requiring a newer glibc than bookworm ships) still get
-          # runtime coverage on the oldest suite they do build.
+          # Smoke-test the oldest available suite (bullseye first, then
+          # bookworm, trixie, forky, sid) so packages that intentionally skip
+          # a suite (e.g. atuin requiring a newer glibc than bookworm ships)
+          # still get runtime coverage on the oldest suite they do build.
+          #
+          # This list is a copy: it runs in this repo's own isolated CI, with
+          # no access to apt-repo's filesystem, so it can't read
+          # apt-repo/suites.json (the canonical source) directly. Update
+          # suites.json first, then run apt-repo's rollout-autowatch.sh to
+          # fan this template out to every *-debian repo in one pass, rather
+          # than hand-editing this list here or in any generated copy.
           DEB="" SUITE=""
-          for suite in bookworm trixie forky sid; do
+          for suite in bullseye bookworm trixie forky sid; do
             mapfile -t debs < <(compgen -G "vite-plus_*+${suite}_arm64.deb")
             if [ -n "${debs[0]:-}" ]; then
               DEB="${debs[0]}"
@@ -167,6 +174,12 @@ jobs:
             exit 0
           fi
           EXPECTED="${{ needs.prepare.outputs.version }}"
+          # Some upstreams (e.g. oven-sh/bun) tag releases as
+          # "<pkgname>-vX.Y.Z" instead of plain "vX.Y.Z" - strip that prefix
+          # before the leading v, or EXPECTED stays "bun-v1.4.0" while the
+          # binary's actual --version output is just "1.4.0" and the grep
+          # below never matches.
+          EXPECTED="${EXPECTED#vite-plus-}"
           EXPECTED="${EXPECTED#v}"
           rm -rf smoke-root
           dpkg-deb -x "$DEB" smoke-root
