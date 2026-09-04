@@ -5,5 +5,6 @@ github_repo: voidzero-dev/vite-plus
 license: MIT
 artifact_format: tar.gz
 description: "The unified toolchain for the web (vp CLI)"
+license: MIT
 
 # Build for all Debian suites and all supported architectures.
